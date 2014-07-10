@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (Ljava/lang/String;F)J
  */
 JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeCreateObject
-(JNIEnv *, jclass, jstring, jstring);
+(JNIEnv *, jclass);
 
 /*
  * Class:     org_opencv_samples_fd_DetectionBasedTracker
@@ -53,7 +53,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
  * Signature: (JJJ)V
  */
 JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeLoop
-  (JNIEnv *, jclass, jlong, jlong, jlong);
+  (JNIEnv *, jclass, jlong, jlong, jlong, jstring);
 
 #ifdef __cplusplus
 }

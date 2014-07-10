@@ -4,7 +4,12 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/contrib/contrib.hpp"
 
+#include "opencv2/features2d/features2d.hpp"
+#include "opencv2/calib3d/calib3d.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+
 #include <string>
+#include <fstream>
 #include <vector>
 
 #include <android/log.h>
@@ -31,71 +36,21 @@ inline void vector_Rect_to_Mat(vector<Rect>& v_rect, Mat& mat)
 
 
 JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeCreateObject
-(JNIEnv * jenv, jclass, jstring jhaarfile, jstring jidentityfile)
+(JNIEnv * jenv, jclass)
 {
-    LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeCreateObject enter");
-    const char* jhaarstr = jenv->GetStringUTFChars(jhaarfile, NULL);
-    string haarFileName(jhaarstr);
-
-    const char* jidentitystr = jenv->GetStringUTFChars(jidentityfile, NULL);
+	/*
+    const char* jidentitystr = jenv->GetStringUTFChars(jhomogstring, NULL);
         //string identityFileName(jhaarstr); // deleted 2:17pm on 7/9; replaced with the below line (ie replaced jhaarstr with jidentitystr)
-        string identityFileName(jidentitystr);
+        //string identityFileName(jidentitystr);
+    string homogstring(jidentitystr);*/
 
-    jlong result = 0;
+    //jlong result = 0;
 
-    try
-    {
-        //PREPARE MODELS
-        modelandcascade * datatoreturn = new modelandcascade();
-        vector<Mat> images; // holds all the training images
-        vector<int> labels; // holds the labels (1 for person#1, etc) corresponding to each image in images
-
-        // Load the cascade-classifier file
-        datatoreturn->thecc.load(haarFileName);
-
-        //cout << "loading model" << endl;
-        datatoreturn->themodel = createLBPHFaceRecognizer();
-        datatoreturn->themodel->load(identityFileName);
-        LOGD("passed loading the model");
-        //got to here
-        std::string str;
-        LOGD("passed right before getstring");
-        //got to here
-        //datatoreturn->themodel->getString(str);
-
-        //LOGD("passed datatoreturn->themodel %s",str.c_str());
-        //cout << "loading dimensions" << endl;
-        //ifstream dimin;
-        //dimin.open("dims.txt");
-        //string wstring, hstring;
-        //getline(dimin, wstring);
-        //getline(dimin, hstring);
-
-        datatoreturn->w = 274;//atoi(wstring.c_str());
-        datatoreturn->h = 274;//atoi(hstring.c_str());
-        LOGD("passed loading w and h");
-        //made it to here
-        return (jlong)datatoreturn;
-        //END PREPARE MODELS
-    }
-    catch(cv::Exception& e)
-    {
-        LOGD("nativeCreateObject caught cv::Exception: %s", e.what());
-        jclass je = jenv->FindClass("org/opencv/core/CvException");
-        if(!je)
-            je = jenv->FindClass("java/lang/Exception");
-        jenv->ThrowNew(je, e.what());
-    }
-    catch (...)
-    {
-        LOGD("nativeCreateObject caught unknown exception");
-        jclass je = jenv->FindClass("java/lang/Exception");
-        jenv->ThrowNew(je, "Unknown exception in JNI code of DetectionBasedTracker.nativeCreateObject()");
-        return 0;
-    }
+    ofstream * writehomog = new ofstream;
+    (*writehomog).open("matrices.out");
 
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeCreateObject exit");
-    return result;
+    return (jlong)writehomog;
 }
 
 JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeDestroyObject
@@ -210,57 +165,140 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
 
 
 JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeLoop
-(JNIEnv * jenv, jclass, jlong macPtr, jlong imageGray, jlong faces)
+(JNIEnv * jenv, jclass, jlong whomog, jlong gray1, jlong gray2, jstring homog)
 {
-    LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeDetect enter");
+	ofstream *writehomog = (ofstream *)whomog;  // <----- this line
+    LOGD("passed just entered nativeloop b4 trying");
     try
     {
-        LOGD("passed made it to nativeloop");
-        vector<Rect> RectFaces;
-        //LOOP CODE
-        modelandcascade * mac = (modelandcascade *)macPtr;
-        Mat gray = *((Mat *)imageGray);
-        Mat resized;
-        mac->thecc.detectMultiScale(gray, RectFaces);
-        LOGD("passed detectmultiscale");
+    	LOGD("passed just entered the try in nativeloop");
+    	const char* jidentitystr = jenv->GetStringUTFChars(homog, NULL);
+    	LOGD("passed char jenv getutfchars");
+    	string homogstring;//(jidentitystr); // <--this one
+    	LOGD("passed making jidentitystr");
 
-        vector_Rect_to_Mat(RectFaces, *((Mat*)faces));// what's going on here?
+    	//output the matrices to the Log
+    	Mat frame1 = *((Mat *)gray1);
+    	Mat frame2 = *((Mat *)gray2);
+    	LOGD("passed making mats");
 
-        //Now loop over all of the detected faces in the frame to identify each one.
-        LOGD("passed rectfacessize %d",RectFaces.size());
-        LOGD("passed themodel address %d", &(mac->themodel));
-        //rectfacessize is 1 when pointed at tph's face
-        for(int i = 0; i < RectFaces.size(); i++) {
-            Size_<int> s = Size(mac->w, mac->h);
-            LOGD("passed wh in forloop");
-            Mat faceCrop = gray(RectFaces[i]);
-            LOGD("passed facecrop in forloop");
-            cv::resize(faceCrop,resized, s, 1.0, 1.0, INTER_CUBIC);
-            LOGD("passed resize in forloop");
-            //got here
-            LOGD("passed themodel address in for loop %d", &(mac->themodel));
-            int currentp = mac->themodel->predict(resized);
-            LOGD("passed currentp in forloop");
+    	int minHessian = 400;
 
-            //rectangle(original, RectFaces[i], CV_RGB(0, 255,0), 1);
-            //box_text = format("Prediction = %d", currentp);
-            Rect r = RectFaces[i];
-            LOGD("passed rectr in forloop");
-            Point p = r.tl();
-            int pos_x = std::max(p.x - 10, 0);
-            int pos_y = std::max(p.y - 10, 0);
-            LOGD("passed Prediction %d: (%d, %d)", currentp, pos_x, pos_y);
+    	//initial variable declaration
+    	OrbFeatureDetector detector(minHessian);
+    	LOGD("passed making detector");
+    	std::vector<KeyPoint> keypoints1, keypoints2;
+    	LOGD("passed making keypoints");
+    	OrbDescriptorExtractor extractor;
+    	LOGD("passed making extractor");
+    	Mat descriptors1, descriptors2;
+    	LOGD("passed making descriptors");
 
-            //putText(original, box_text, Point(pos_x, pos_y), FONT_HERSHEY_PLAIN, 1.0, CV_RGB(0,255,0), 2.0);
-        }
-        LOGD("passed end of for loop in an iteration");
+    	//process first frame
+    	detector.detect(frame1, keypoints1);
+    	LOGD("passed detecting1");
+    	extractor.compute(frame1, keypoints1, descriptors1);
+    	LOGD("passed computing1");
 
-        //END LOOP CODE
+    	//process second frame
+    	detector.detect(frame2, keypoints2);
+    	LOGD("passed detecting2");
+    	extractor.compute(frame2, keypoints2, descriptors2);
+    	LOGD("passed computing2");
 
+    	//thinkpad webcam initially displays black screen so the following check
+    	// was needed. It might not be needed for the android cam.
+    	if (keypoints1.size() == 0){
+    		LOGD("passed keypointssize was zero!!");
+			frame1 = frame2.clone();
+			keypoints1 = keypoints2;
+			descriptors1 = descriptors2;
+			//go back to the javacode and continue with the next frame
+			return;
+    	}
 
-                //((DetectionBasedTracker*)thiz)->process(*((Mat*)imageGray));
-                //((DetectionBasedTracker*)thiz)->getObjects(RectFaces);
-                //vector_Rect_to_Mat(RectFaces, *((Mat*)faces));
+    	LOGD("passed keypointssize not zero!");
+    	//Now match the points on the successive images
+    	//FlannBasedMatcher matcher;
+    	BFMatcher matcher;
+    	LOGD("passed creating matcher");
+    	std::vector<DMatch> matches;
+    	LOGD("passed creating matches");
+    	//DMatch mymatch;
+    	//mymatch.distance;
+    	if(descriptors1.empty()){
+    		LOGD("passed descriptors1 is empty!");
+    	}
+    	if(descriptors2.empty()){
+    		LOGD("passed descriptors2 is empty!");
+    	}
+    	LOGD("passed key1 size %d", keypoints1.size());
+    	LOGD("passed key2 size %d", keypoints2.size());
+
+    	matcher.match(descriptors1, descriptors2, matches);
+    	LOGD("passed doing the matching");
+
+    	//eliminate weaker matches
+    	double maxdist = 0;
+		double mindist = 100;
+		for (int j = 0; j < descriptors1.rows; j++){
+			DMatch match = matches[j];
+			double dist = match.distance;
+			if( dist < mindist ) mindist = dist;
+			if( dist > maxdist ) maxdist = dist;
+		}
+
+		//build the list of "good" matches
+		std::vector<DMatch> goodmatches;
+		for( int k = 0; k < descriptors1.rows; k++ ){
+			DMatch amatch = matches[k];
+			if( amatch.distance <= 3*mindist ){
+				goodmatches.push_back(amatch);
+			}
+		}
+
+	//Now compute homography matrix between the stronger matches
+		//-- Localize the object
+		std::vector<Point2f> obj;
+		std::vector<Point2f> scene;
+		if (goodmatches.size() < 4){
+			frame1 = frame2.clone();
+			keypoints1 = keypoints2;
+			descriptors1 = descriptors2;
+			return;
+		}
+
+		for(int l = 0; l < goodmatches.size(); l++){
+		//-- Get the keypoints from the good matches
+			DMatch gm1 = goodmatches[l];
+			KeyPoint kp1 = keypoints1[gm1.queryIdx];
+			obj.push_back(kp1.pt);
+
+			KeyPoint kp2 = keypoints1[gm1.trainIdx];
+			scene.push_back(kp2.pt);
+		}
+
+		Mat hmatrix = findHomography(obj,scene,CV_RANSAC);
+
+		//found the homography matrix! now save values into homogstring
+
+		//std::stringstream s; //used to convert numerical values to a string
+
+		*writehomog << hmatrix.at<double>(0,0) << " ";
+		LOGD("passed el00  %f",hmatrix.at<double>(0,0));
+		LOGD("  ");
+		*writehomog << hmatrix.at<double>(0,1) << " ";
+		LOGD("passed el01  %f",hmatrix.at<double>(0,1));
+		LOGD("  ");
+		*writehomog << hmatrix.at<double>(0,2) << " ";
+
+		*writehomog << hmatrix.at<double>(1,0) << " ";
+		*writehomog << hmatrix.at<double>(1,1) << " ";
+		*writehomog << hmatrix.at<double>(1,2) << " ";
+
+		*writehomog << hmatrix.at<double>(2,0) << " ";
+		*writehomog << hmatrix.at<double>(2,1) << " ";
+		*writehomog << hmatrix.at<double>(2,2) << " endmatrix ";
 
 
     }
@@ -276,7 +314,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
     {
         LOGD("nativeDetect caught unknown exception");
         jclass je = jenv->FindClass("java/lang/Exception");
-        jenv->ThrowNew(je, "Unknown exception in JNI code DetectionBasedTracker.nativeDetect()");
+        jenv->ThrowNew(je, "Unknown exception in JNI nativeloop's code");
     }
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeDetect exit");
 }

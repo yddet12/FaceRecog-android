@@ -61,6 +61,8 @@ obj/local/armeabi-v7a/objs/native_code_interface/NativeCodeInterface_jni.o: \
  ../../sdk/native/jni/include/opencv2/contrib/openfabmap.hpp \
  C:/android/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/list \
  C:/android/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/set \
+ ../../sdk/native/jni/include/opencv2/calib3d/calib3d.hpp \
+ C:/android/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/fstream \
  C:/android/android-ndk-r9d/platforms/android-8/arch-arm/usr/include/android/log.h
 
 jni/NativeCodeInterface_jni.h:
@@ -186,5 +188,9 @@ C:/android/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/valarray:
 C:/android/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/list:
 
 C:/android/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/set:
+
+../../sdk/native/jni/include/opencv2/calib3d/calib3d.hpp:
+
+C:/android/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/fstream:
 
 C:/android/android-ndk-r9d/platforms/android-8/arch-arm/usr/include/android/log.h:

@@ -57,6 +57,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private Mat                    mRgba;
     private Mat                    mGray;
+    private String				   homog;
     private File                   mCascadeFile;
     private File                   mIdentityFile;
 
@@ -172,93 +173,50 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                     // seems to work thru here!
                    
      // Now read in those images.
-                   
-                    for(int i= 0; i < imgnames.size(); i++)
-                    {
-                        try{
-             
-                            InputStream isimgg = getAssets().open(imgnames.get(i));
-                            byte[] fileBytes=new byte[isimgg.available()];
-                            isimgg.read( fileBytes);
-                            isimgg.close();
-                            Log.i(TAG,"succeeded, len is " + fileBytes.length);  // makesure filebytes has the jpg data and is a valid array
-                            Log.i(TAG,"succeeded! the raw image data is now in fileBytes!");
-                            //Mat thematimg = Highgui.imdecode(Mat(fileBytes),1);
-                          
-                            /*
-                            InputStream is =getAssets().open(imgnames.get(1));
-                            ByteArrayOutputStream os = new ByteArrayOutputStream(is.available());
-                            byte[] buffer = new byte[4096];
-                            int bytesRead;
-                            while ((bytesRead = is.read(buffer)) != -1) {
-                                os.write(buffer, 0, bytesRead);
-                            }
-                            is.close(); */
-   
-                            /* 
-                            //in original .java code on web:
-                             
-                            // int, int, int
-                            // uses rows, cols, type
-                            Mat encoded = new Mat(1, os.size(), CvType.CV_8U);
-                           
-                            // int, int, byte[]
-                            // uses rows, cols, data
-                            encoded.put(0, 0, os.toByteArray());
-                            os.close();
-                             */
-                          
-                            Mat[] images = new Mat[imgnames.size()];
-                            //for first image
-                            images[0] = new Mat(112,92,CvType.CV_8UC1);
-                            images[0].put(0,0,fileBytes);
-                           
-                            //DELIVER AND DRAW FRAME; COPY CODE FROM THAT
-                            //GET INTO Bitmap format
-                            Log.i(TAG, "ln200 columns " + images[0].cols());
-                            Log.i(TAG, "ln201 rows " + images[0].rows());
-                            Log.i(TAG, "got to right b4 the mat2bitmap");
-                            Bitmap mybmp = Bitmap.createBitmap(92,112,Bitmap.Config.ARGB_8888);
-                            Utils.matToBitmap(images[0], mybmp);
-                            //test bmp dimensions with name.getWidth() and name.getHeight()
-                            Log.i(TAG,"ln206 width of the bitmap is " + mybmp.getWidth());
-                            Log.i(TAG,"ln207 height of the bitmap is " + mybmp.getHeight());
-                            Log.i(TAG, "blahblah");
-                            Log.i(TAG, "blahblahblah");
-                           
-                            BmpTest mybmptest = new BmpTest(getApplicationContext());
-                            mybmptest.displayimg(mybmp);
-                            Log.i(TAG, "got to ln213");
-                            Log.i(TAG, "got to ln214");
-                           
-                            //after making Mat of appropriate dimensions with fileBytes,
-                            // will need to use imdecode! see link below
-                            //http://stackoverflow.com/questions/14727267/opencv-read-jpeg-image-from-buffer
-                           
-                           
-                           
-                            //turn bytes of data i
-                            /*
-                            Mat encoded = new Mat(1, fileBytes.length, CvType.CV_16SC1);
-                            encoded.put(0, 0, fileBytes);
-                           
-                            Mat decoded = Highgui.imdecode(encoded, 1);
-                            encoded.release();
-                           
-                           
-                           
-                            images.add(encoded);*/
-                           
-                            //Log.i(TAG, "number of columns in image is " + images.get(0).cols());
-                           
-                        }
-                        catch (IOException e){
-                            e.printStackTrace();
-                            Log.e(TAG, "I failed! " + e);
-                        }
-                    }
-                   
+                   /*
+																                    for(int i= 0; i < imgnames.size(); i++)
+																                    {
+																                        try{
+																             
+																                            InputStream isimgg = getAssets().open(imgnames.get(i));
+																                            byte[] fileBytes=new byte[isimgg.available()];
+																                            isimgg.read( fileBytes);
+																                            isimgg.close();
+																                            Log.i(TAG,"succeeded, len is " + fileBytes.length);  // makesure filebytes has the jpg data and is a valid array
+																                            Log.i(TAG,"succeeded! the raw image data is now in fileBytes!");
+																                            //Mat thematimg = Highgui.imdecode(Mat(fileBytes),1);
 
+																                            Mat[] images = new Mat[imgnames.size()];
+																                            //for first image
+																                            images[0] = new Mat(112,92,CvType.CV_8UC1);
+																                            images[0].put(0,0,fileBytes);
+																                           
+																                            //DELIVER AND DRAW FRAME; COPY CODE FROM THAT
+																                            //GET INTO Bitmap format
+																                            Log.i(TAG, "ln200 columns " + images[0].cols());
+																                            Log.i(TAG, "ln201 rows " + images[0].rows());
+																                            Log.i(TAG, "got to right b4 the mat2bitmap");
+																                            Bitmap mybmp = Bitmap.createBitmap(92,112,Bitmap.Config.ARGB_8888);
+																                            Utils.matToBitmap(images[0], mybmp);
+																                            //test bmp dimensions with name.getWidth() and name.getHeight()
+																                            Log.i(TAG,"ln206 width of the bitmap is " + mybmp.getWidth());
+																                            Log.i(TAG,"ln207 height of the bitmap is " + mybmp.getHeight());
+																                            Log.i(TAG, "blahblah");
+																                            Log.i(TAG, "blahblahblah");
+																                           
+																                            BmpTest mybmptest = new BmpTest(getApplicationContext());
+																                            mybmptest.displayimg(mybmp);
+																                            Log.i(TAG, "got to ln213");
+																                            Log.i(TAG, "got to ln214");
+																                           
+																                        }
+																                        catch (IOException e){
+																                            e.printStackTrace();
+																                            Log.e(TAG, "I failed! " + e);
+																                        }
+																                    }
+                   */
+						
                    
                     //Reading in the image
                    
@@ -317,6 +275,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public void onCameraViewStarted(int width, int height) {
         mGray = new Mat();
         mRgba = new Mat();
+        String homog;
     }
 
     public void onCameraViewStopped() {
@@ -325,44 +284,48 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
+    //^^returns a Mat.  each time it is called, the mat it returns will be drawn onscreen
+    	if(mRgba.empty()){
+    		/*if empty, then this must be the first time onCameraFrame was called
+    		 * so therefore it must be the first frame.  So return the first frame
+    		 * and that's it for this time that oncameraframe was called.*/
+    		mRgba = inputFrame.rgba();
+    		mGray = inputFrame.gray();
+    		//doesn't call native code to compute homog
+    		//mNativeDetector.nativeLoopInterface(null, mGray);// don't call mnativedetector
+    		//just draw the very first frame with no homography matrix
+    		return mRgba;    	
+    	}
+    	else{
+    		//not the very first frame
+    		Log.i(TAG,  "passed mrgba full");
+    		Mat mrgba2 = inputFrame.rgba();
+    		Mat gray2 = inputFrame.gray();
+    		//call native code with the 2 frames.
+    		//native code will put the homog matrix into "homog". then we can somehow output the homog-matrix
+    		mNativeDetector.nativeLoopInterface(mGray, gray2, homog);
+    		mGray = gray2;
+    		
+    		//NEED TO SWAP FRAMES (MAKE CURRENT FRAME THE PREV ONE) AFTER RUNNING
+    		//NATIVE CODE!!
+    		return mrgba2;
+    	}
+    	/*
         mRgba = inputFrame.rgba();
         if (mNativeDetector != null){
         Log.i(TAG, "oncameraframe");
 
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
-/*
-        if (mAbsoluteFaceSize == 0) {
-            int height = mGray.rows();
-            if (Math.round(height * mRelativeFaceSize) > 0) {
-                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
-            }
-            /mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
-        }
-*/
+
        
         MatOfRect faces = new MatOfRect();
         mNativeDetector.nativeLoopInterface(mGray, faces);
-       
-        /*
-        if (mDetectorType == JAVA_DETECTOR) {
-            if (mJavaDetector != null)
-                mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                        new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-        }
-        else if (mDetectorType == NATIVE_DETECTOR) {
-            if (mNativeDetector != null)
-                mNativeDetector.nativeLoopInterface(mGray, faces);
-        }
-        else {
-            Log.e(TAG, "Detection method is not selected!");
-        }*/
 
         Rect[] facesArray = faces.toArray();
         for (int i = 0; i < facesArray.length; i++)
             Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
-        }
-        return mRgba;
+        }*/
     }
 
     @Override

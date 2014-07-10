@@ -1,3 +1,4 @@
+//3 places where need to change args
 package org.opencv.samples.facedetect;
 
 import org.opencv.core.Mat;
@@ -7,7 +8,7 @@ public class NativeCodeInterface
 {
     /*Constructor, called on startup "Part One"*/
     public NativeCodeInterface(String haarfile, String idfile) {
-        mNativeObj = nativeCreateObject(haarfile, idfile);
+        mNativeObj = nativeCreateObject();//haarfile, idfile);
     }
 
   
@@ -16,8 +17,8 @@ public class NativeCodeInterface
     }
    
     /*Loop, called with onCameraFrame "Part Two"*/
-    public void nativeLoopInterface(Mat imageGray, MatOfRect faces) {
-        nativeLoop(mNativeObj, imageGray.getNativeObjAddr(), faces.getNativeObjAddr());
+    public void nativeLoopInterface(Mat imgGrayPrev, Mat imgGrayCurrent, String homog) {
+        nativeLoop(mNativeObj, imgGrayPrev.getNativeObjAddr(), imgGrayCurrent.getNativeObjAddr(), homog);
     }
 
     public void release() {
@@ -34,9 +35,9 @@ public class NativeCodeInterface
 
     private long mNativeObj = 0;
 
-    private static native long nativeCreateObject(String haarfile, String identityfile);
+    private static native long nativeCreateObject();//String haarfile, String identityfile);
     private static native void nativeDestroyObject(long thiz);
     private static native void nativeStart(long thiz);
     private static native void nativeStop(long thiz);
-    private static native void nativeLoop(long mac, long inputImage, long faces);
+    private static native void nativeLoop(long homogfile, long inputImage1, long inputImage2, String homog);
 }
