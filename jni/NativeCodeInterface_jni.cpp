@@ -11,6 +11,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <ctime>
 
 #include <android/log.h>
 
@@ -34,26 +35,31 @@ inline void vector_Rect_to_Mat(vector<Rect>& v_rect, Mat& mat)
 }// This is the datatype that the PrepareFiles function will return
 // PrepareFiles loads csv file, training images, and haar cascade file
 
+struct homogandtimer{
+	ofstream writehomogm;
+	ofstream speedrecord;
+};
 
-JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeCreateObject
+JNIEXPORT jlong JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeCreateObject
 (JNIEnv * jenv, jclass)
 {
-	/*
-    const char* jidentitystr = jenv->GetStringUTFChars(jhomogstring, NULL);
-        //string identityFileName(jhaarstr); // deleted 2:17pm on 7/9; replaced with the below line (ie replaced jhaarstr with jidentitystr)
-        //string identityFileName(jidentitystr);
-    string homogstring(jidentitystr);*/
+	homogandtimer * hat = new homogandtimer;
 
-    //jlong result = 0;
+	hat->speedrecord.open("/data/data/org.opencv.samples.facedetect/speedd.txt");
+	hat->speedrecord << "testing write to speedtest\n";
+	hat->speedrecord.flush();
+	LOGD("passed just streamed to speedd.txt");
+	hat->writehomogm.open("/data/data/org.opencv.samples.facedetect/homog.txt");
+	hat->writehomogm << "testing write to homogfile\n";
+	hat->writehomogm.flush();
+	LOGD("passed just streamed to homog.txt");
 
-    ofstream * writehomog = new ofstream;
-    (*writehomog).open("matrices.out");
 
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeCreateObject exit");
-    return (jlong)writehomog;
+    return (jlong)hat;
 }
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeDestroyObject
+JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeDestroyObject
 (JNIEnv * jenv, jclass, jlong thiz)
 {
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeDestroyObject enter");
@@ -61,6 +67,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
     {
         if(thiz != 0)
         {
+
             //((DetectionBasedTracker*)thiz)->stop();
             //delete (DetectionBasedTracker*)thiz;
         }
@@ -79,10 +86,16 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
         jclass je = jenv->FindClass("java/lang/Exception");
         jenv->ThrowNew(je, "Unknown exception in JNI code of DetectionBasedTracker.nativeDestroyObject()");
     }
+    homogandtimer *thehat = (homogandtimer *)thiz;
+    thehat->speedrecord.close();
+    LOGD("passed closed speed");
+    thehat->writehomogm.close();
+    LOGD("passed closed homog");
+
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeDestroyObject exit");
 }
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeStart
+JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeStart
 (JNIEnv * jenv, jclass, jlong thiz)
 {
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeStart enter");
@@ -107,7 +120,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeStart exit");
 }
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeStop
+JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeStop
 (JNIEnv * jenv, jclass, jlong thiz)
 {
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeStop enter");
@@ -132,7 +145,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeStop exit");
 }
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeSetFaceSize
+JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeSetFaceSize
 (JNIEnv * jenv, jclass, jlong thiz, jint faceSize)
 {
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeSetFaceSize enter");
@@ -164,15 +177,16 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
 }
 
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeLoop
-(JNIEnv * jenv, jclass, jlong whomog, jlong gray1, jlong gray2, jstring homog)
+JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeLoop
+(JNIEnv * jenv, jclass, jlong hataddr, jlong gray1, jlong gray2)
 {
-	ofstream *writehomog = (ofstream *)whomog;  // <----- this line
+	clock_t t1, t2;
+	t1 = clock();
+	homogandtimer *hatinloop = (homogandtimer *) hataddr;
     LOGD("passed just entered nativeloop b4 trying");
     try
     {
     	LOGD("passed just entered the try in nativeloop");
-    	const char* jidentitystr = jenv->GetStringUTFChars(homog, NULL);
     	LOGD("passed char jenv getutfchars");
     	string homogstring;//(jidentitystr); // <--this one
     	LOGD("passed making jidentitystr");
@@ -206,8 +220,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
     	extractor.compute(frame2, keypoints2, descriptors2);
     	LOGD("passed computing2");
 
-    	//thinkpad webcam initially displays black screen so the following check
-    	// was needed. It might not be needed for the android cam.
+    	//in case frame has no features (eg if all-black from finger blocking lens)
     	if (keypoints1.size() == 0){
     		LOGD("passed keypointssize was zero!!");
 			frame1 = frame2.clone();
@@ -224,8 +237,6 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
     	LOGD("passed creating matcher");
     	std::vector<DMatch> matches;
     	LOGD("passed creating matches");
-    	//DMatch mymatch;
-    	//mymatch.distance;
     	if(descriptors1.empty()){
     		LOGD("passed descriptors1 is empty!");
     	}
@@ -280,26 +291,28 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
 
 		Mat hmatrix = findHomography(obj,scene,CV_RANSAC);
 
-		//found the homography matrix! now save values into homogstring
-
-		//std::stringstream s; //used to convert numerical values to a string
-
-		*writehomog << hmatrix.at<double>(0,0) << " ";
+		hatinloop->writehomogm << hmatrix.at<double>(0,0) << " ";
 		LOGD("passed el00  %f",hmatrix.at<double>(0,0));
 		LOGD("  ");
-		*writehomog << hmatrix.at<double>(0,1) << " ";
+		hatinloop->writehomogm << hmatrix.at<double>(0,1) << " ";
 		LOGD("passed el01  %f",hmatrix.at<double>(0,1));
 		LOGD("  ");
-		*writehomog << hmatrix.at<double>(0,2) << " ";
+		hatinloop->writehomogm << hmatrix.at<double>(0,2) << " ";
 
-		*writehomog << hmatrix.at<double>(1,0) << " ";
-		*writehomog << hmatrix.at<double>(1,1) << " ";
-		*writehomog << hmatrix.at<double>(1,2) << " ";
+		hatinloop->writehomogm << hmatrix.at<double>(1,0) << " ";
+		hatinloop->writehomogm << hmatrix.at<double>(1,1) << " ";
+		hatinloop->writehomogm << hmatrix.at<double>(1,2) << " ";
 
-		*writehomog << hmatrix.at<double>(2,0) << " ";
-		*writehomog << hmatrix.at<double>(2,1) << " ";
-		*writehomog << hmatrix.at<double>(2,2) << " endmatrix ";
+		hatinloop->writehomogm << hmatrix.at<double>(2,0) << " ";
+		hatinloop->writehomogm << hmatrix.at<double>(2,1) << " ";
+		hatinloop->writehomogm << hmatrix.at<double>(2,2) << " endmatrix\n";
 
+		t2 = clock();
+		hatinloop->speedrecord << (float) (t2 - t1)/CLOCKS_PER_SEC << "\n";
+		LOGD("passed timingstuff %f",(float) (t2 - t1)/CLOCKS_PER_SEC);
+
+		hatinloop->writehomogm.flush();
+		hatinloop->speedrecord.flush();
 
     }
     catch(cv::Exception& e)
@@ -317,4 +330,5 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
         jenv->ThrowNew(je, "Unknown exception in JNI nativeloop's code");
     }
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeDetect exit");
+
 }

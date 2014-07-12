@@ -12,7 +12,7 @@ extern "C" {
  * Method:    nativeCreateObject
  * Signature: (Ljava/lang/String;F)J
  */
-JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeCreateObject
+JNIEXPORT jlong JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeCreateObject
 (JNIEnv *, jclass);
 
 /*
@@ -20,7 +20,7 @@ JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_n
  * Method:    nativeDestroyObject
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeDestroyObject
+JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeDestroyObject
   (JNIEnv *, jclass, jlong);
 
 /*
@@ -28,7 +28,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
  * Method:    nativeStart
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeStart
+JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeStart
   (JNIEnv *, jclass, jlong);
 
 /*
@@ -36,7 +36,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
  * Method:    nativeStop
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeStop
+JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeStop
   (JNIEnv *, jclass, jlong);
 
   /*
@@ -44,7 +44,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
    * Method:    nativeSetFaceSize
    * Signature: (JI)V
    */
-  JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeSetFaceSize
+  JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeSetFaceSize
   (JNIEnv *, jclass, jlong, jint);
 
 /*
@@ -52,8 +52,8 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_na
  * Method:    nativeDetect
  * Signature: (JJJ)V
  */
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_NativeCodeInterface_nativeLoop
-  (JNIEnv *, jclass, jlong, jlong, jlong, jstring);
+JNIEXPORT void JNICALL Java_org_recg_writehomog_NativeCodeInterface_nativeLoop
+  (JNIEnv *, jclass, jlong, jlong, jlong);
 
 #ifdef __cplusplus
 }
